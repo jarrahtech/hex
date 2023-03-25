@@ -1,111 +1,84 @@
 package com.jarrahtechnology.hex
 
-object CoordSystem {
-  enum Direction {
-    case North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest
-
-    private val size =Direction.values.size
-    def reverse =Direction.fromOrdinal((this.ordinal + size / 2) % size)
-  }
-}
-
 trait CoordSystem {
-  import CoordSystem.Direction
-
   def isHorizontal: Boolean
   def isEven: Boolean
-  def validDirections: List[Direction] // in clockwise order
-  def neighborShift(pos: Coord)(dir: Option[Direction]): Coord
-  protected def neighborShifts: List[List[Coord]]
+  def validDirections: List[Direction] // in clockwise order 
+  protected def neighborShifts: List[List[Option[Coord]]]
   def toCube(c: Coord): CubeCoord
   def toCoord(c: CubeCoord): Coord
+  protected def neighborLine(pos: Coord): Int
 
-  def rotateClockwise(dir: Option[Direction]) = rotate(1, dir)
-  def rotateAnticlockwise(dir: Option[Direction]) = rotate(Hex.sides - 1, dir)
-  private def rotate(shift: Int, dir: Option[Direction]) = dir.map(validDirections.indexOf(_)) match {
-    case Some(d) if d > -1 => Some(validDirections((d + shift) % Hex.sides))
-    case _                 => None
+  def rotateClockwise(dir: Direction): Option[Direction] = rotate(dir)(1)
+  def rotateAnticlockwise(dir: Direction): Option[Direction] = rotate(dir)(hexSides - 1)
+  def rotate(dir: Direction)(shift: Int): Option[Direction] = validDirections.indexOf(dir) match {
+    case d if d >= 0 => Some(validDirections((d + shift) % hexSides)) // assumes validDirections in clockwise order
+    case _           => None
   }
-  def neighbor(pos: Coord)(direction: Option[Direction]) = pos + neighborShift(pos)(direction)
+  
+  def neighborShift(pos: Coord)(dir: Direction): Option[Coord] = neighborShifts(neighborLine(pos))(dir.ordinal)
+  def neighbor(pos: Coord)(direction: Direction): Option[Coord] = neighborShift(pos)(direction).map(_ + pos)
+  def neighbors(pos: Coord): List[Coord] = neighborShifts(neighborLine(pos)).flatten.map(_ + pos)
+
   def distance(c1: Coord)(c2: Coord) = toCube(c1).distance(toCube(c2))
+  def closest(from: Coord)(zone: List[Coord]): Option[Coord] = zone.minByOption(distance(from)(_))
+  def furthest(from: Coord)(zone: List[Coord]): Option[Coord] = zone.maxByOption(distance(from)(_))
 }
 
-trait HorizontalCoordSystem extends CoordSystem {
-  import CoordSystem.Direction
-  import CoordSystem.Direction.*
-
-  val isHorizontal = true
-  val validDirections = List(NorthEast, East, SouthEast, SouthWest, West, NorthWest)
-  def neighborShift(pos: Coord)(dir: Option[Direction]) = dir match {
-    case Some(d) => neighborShifts(pos.y & 1)(d.ordinal);
-    case None    => Coord.zero
-  }
+private trait HorizontalCoordSystem extends CoordSystem { // pointy tops
+  import Direction.*
+  def isHorizontal = true
+  def validDirections = List(NorthEast, East, SouthEast, SouthWest, West, NorthWest)
+  protected def neighborLine(pos: Coord) = pos.y & 1
 }
 
-trait VerticalCoordSystem extends CoordSystem {
-  import CoordSystem.Direction
-  import CoordSystem.Direction._
-
-  val isHorizontal = false
-  val validDirections = List(North, NorthEast, SouthEast, South, SouthWest, NorthWest)
-  def neighborShift(pos: Coord)(dir: Option[Direction]) = dir match {
-    case Some(d) => neighborShifts(pos.x & 1)(d.ordinal);
-    case None    => Coord.zero
-  }
+private trait VerticalCoordSystem extends CoordSystem { // flat tops
+  import Direction.*
+  def isHorizontal = false
+  def validDirections = List(North, NorthEast, SouthEast, South, SouthWest, NorthWest)
+  protected def neighborLine(pos: Coord) = pos.x & 1
 }
 
-sealed case class EvenHorizontalCoordSystem() extends HorizontalCoordSystem {
+case object EvenHorizontalCoordSystem extends HorizontalCoordSystem {
+  import Coord.*
   val isEven = true
-  def neighborShifts = List(
-    List(Coord.zero, Coord(1, 1), Coord(1, 0), Coord(1, -1), Coord.zero, Coord(0, -1), Coord(-1, 0), Coord(0, 1)),
-    List(Coord.zero, Coord(0, 1), Coord(1, 0), Coord(0, -1), Coord.zero, Coord(-1, -1), Coord(-1, 0), Coord(-1, 1))
+  protected def neighborShifts = List(
+    List(None, Option(northEast), Option(east), Option(southEast), None, Option(south), Option(west), Option(north)),
+    List(None, Option(north), Option(east), Option(south), None, Option(southWest), Option(west), Option(northWest))
   )
-  def toCube(c: Coord) = {
-    val x = c.x - (c.y + (c.y & 1)) / 2
-    val z = c.y
-    CubeCoord(x, -x - z, z)
-  }
-  def toCoord(c: CubeCoord) = Coord(c.x + (c.z + (c.z & 1)) / 2, c.z)
+  def toCube(c: Coord) = CubeCoord(c.x - (c.y + (c.y & 1)) / 2, c.y)
+  def toCoord(c: CubeCoord) = Coord(c.q + (c.r + (c.r & 1)) / 2, c.r)
 }
 
-sealed case class EvenVerticalCoordSystem() extends VerticalCoordSystem {
+case object EvenVerticalCoordSystem extends VerticalCoordSystem {
+  import Coord.*
   val isEven = true
-  def neighborShifts = List(
-    List(Coord(0, 1), Coord(1, 1), Coord.zero, Coord(1, 0), Coord(0, -1), Coord.zero, Coord(-1, 0), Coord(-1, 1)),
-    List(Coord(0, 1), Coord(1, 0), Coord.zero, Coord(1, -1), Coord(0, -1), Coord.zero, Coord(-1, -1), Coord(-1, 0))
+  protected def neighborShifts = List(
+    List(Option(north), Option(northEast), None, Option(east), Option(south), Option(west), None, Option(northWest)),
+    List(Option(north), Option(east), None, Option(southEast), Option(south), Option(southWest), None, Option(west))
   )
-  def toCube(c: Coord) = {
-    val x = c.x
-    val z = c.y - (c.x + (c.x & 1)) / 2
-    CubeCoord(x, -x - z, z)
-  }
-  def toCoord(c: CubeCoord) = Coord(c.x, c.z + (c.x + (c.x & 1)) / 2)
+  def toCube(c: Coord) = CubeCoord(c.x, c.y - (c.x + (c.x & 1)) / 2)
+  def toCoord(c: CubeCoord) = Coord(c.q, c.r + (c.q + (c.q & 1)) / 2)
 }
 
-sealed case class OddHorizontalCoordSystem() extends HorizontalCoordSystem {
+case object OddHorizontalCoordSystem extends HorizontalCoordSystem {
+  import Coord.*
   val isEven = false
-  def neighborShifts = List(
-    List(Coord.zero, Coord(0, 1), Coord(1, 0), Coord(0, -1), Coord.zero, Coord(-1, -1), Coord(-1, 0), Coord(-1, 1)),
-    List(Coord.zero, Coord(1, 1), Coord(1, 0), Coord(1, -1), Coord.zero, Coord(0, -1), Coord(-1, 0), Coord(0, 1))
+  protected def neighborShifts = List(
+    List(None, Option(north), Option(east), Option(south), None, Option(southWest), Option(west), Option(northWest)),
+    List(None, Option(northEast), Option(east), Option(southEast), None, Option(south), Option(west), Option(north))
   )
-  def toCube(c: Coord) = {
-    val x = c.x - (c.y - (c.y & 1)) / 2
-    val z = c.y
-    CubeCoord(x, -x - z, z)
-  }
-  def toCoord(c: CubeCoord) = Coord(c.x + (c.z - (c.z & 1)) / 2, c.z)
+  def toCube(c: Coord) = CubeCoord(c.x - (c.y - (c.y & 1)) / 2, c.y)
+  def toCoord(c: CubeCoord) = Coord(c.q + (c.r - (c.r & 1)) / 2, c.r)
 }
 
-sealed case class OddVerticalCoordSystem() extends VerticalCoordSystem {
+case object OddVerticalCoordSystem extends VerticalCoordSystem {
+  import Coord.*
   val isEven = false
-  def neighborShifts = List(
-    List(Coord(0, 1), Coord(1, 0), Coord.zero, Coord(1, -1), Coord(0, -1), Coord.zero, Coord(-1, -1), Coord(-1, 0)),
-    List(Coord(0, 1), Coord(1, 1), Coord.zero, Coord(1, 0), Coord(0, -1), Coord.zero, Coord(-1, 0), Coord(-1, 1))
+  protected def neighborShifts = List(
+    List(Option(north), Option(east), None, Option(southEast), Option(south), Option(southWest), None, Option(west)),
+    List(Option(north), Option(northEast), None, Option(east), Option(south), Option(west), None, Option(northWest))
   )
-  def toCube(c: Coord) = {
-    val x = c.x
-    val z = c.y - (c.x - (c.x & 1)) / 2
-    CubeCoord(x, -x - z, z)
-  }
-  def toCoord(c: CubeCoord) = Coord(c.x, c.y + (c.x - (c.x & 1)) / 2)
+  def toCube(c: Coord) = CubeCoord(c.x, c.y - (c.x - (c.x & 1)) / 2)
+  def toCoord(c: CubeCoord) = Coord(c.q, c.r + (c.q - (c.q & 1)) / 2)
 }

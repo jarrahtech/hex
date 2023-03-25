@@ -5,7 +5,7 @@ ThisBuild / versionScheme := Some("early-semver")
 lazy val root = (project in file("."))
   .settings(
     name := "hex",
-    version := "0.1",
+    version := "0.1.0",
 
     scalacOptions ++= Seq(
       "-encoding", "utf8", // Option and arguments on same line
