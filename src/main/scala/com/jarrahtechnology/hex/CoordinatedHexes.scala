@@ -1,6 +1,6 @@
 package com.jarrahtechnology.hex
 
-trait CoordinatedHexes[+H, C <: CoordSystem] {
+trait CoordinatedHexes[+H, C <: CoordSystem] extends Iterable[(Coord, H)] {
   def coords: C
   def hexAt(pos: Coord): Option[H]
   def hexAtWithCoord(pos: Coord): Option[(Coord, H)] = hexAt(pos).map((pos, _))

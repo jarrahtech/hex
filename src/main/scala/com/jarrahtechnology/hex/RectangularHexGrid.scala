@@ -11,7 +11,7 @@ import scala.collection.mutable.ArraySeq
   * @param rowRange inclusive from low -> high
   * @param hexes
   */
-class RectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: CommonSeq[CommonSeq[H]]) extends HexGrid[H, C] with Iterable[(Coord, H)] {
+class RectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: CommonSeq[CommonSeq[H]]) extends HexGrid[H, C] {
   assert(colRange._1 <= colRange._2 && rowRange._1 <= rowRange._2)
   assert(hexes.length == width)
   assert(!hexes.exists(_.length != height)) // force grid to be rectangular
@@ -19,7 +19,6 @@ class RectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int
   val width: Int = colRange._2 - colRange._1 + 1
   val height: Int = rowRange._2 - rowRange._1 + 1
   override val size: Int = width * height
-  
   
   protected def get(pos: Coord): H = hexes(pos.column-colRange._1)(pos.row-rowRange._1)
   def valid(pos: Coord): Boolean = pos.column >= colRange._1 && pos.column <= colRange._2 && pos.row >= rowRange._1 && pos.row <= rowRange._2
