@@ -12,13 +12,14 @@ import scala.collection.mutable.ArraySeq
   * @param hexes
   */
 class RectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: CommonSeq[CommonSeq[H]]) extends HexGrid[H, C] {
-  assert(colRange._1 <= colRange._2 && rowRange._1 <= rowRange._2)
-  assert(hexes.length == width)
-  assert(!hexes.exists(_.length != height)) // force grid to be rectangular
+  val numColumns: Int = colRange._2 - colRange._1 + 1
+  val numRows: Int = rowRange._2 - rowRange._1 + 1
+  override val size: Int = numColumns * numRows
 
-  val width: Int = colRange._2 - colRange._1 + 1
-  val height: Int = rowRange._2 - rowRange._1 + 1
-  override val size: Int = width * height
+  require(colRange._1 <= colRange._2, s"column range reversed: ${colRange._1}>${colRange._2}")
+  require(rowRange._1 <= rowRange._2, s"row range reversed: ${rowRange._1}>${rowRange._2}")
+  require(hexes.length == numColumns, s"provided hexes wrong size: length=${hexes.length}, width=${numColumns}")
+  require(!hexes.exists(_.length != numRows), s"grid not rectangular: height=${numRows}")
   
   protected def get(pos: Coord): H = hexes(pos.column-colRange._1)(pos.row-rowRange._1)
   def valid(pos: Coord): Boolean = pos.column >= colRange._1 && pos.column <= colRange._2 && pos.row >= rowRange._1 && pos.row <= rowRange._2
@@ -33,15 +34,21 @@ class RectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int
       (Coord(col+colRange._1, row+rowRange._1), hexes(col)(row))
     }
   }
-  def colByRowIterator(): Iterator[(Coord, H)] = new LinearIterator(pos => (pos / width, pos % width))
-  def rowByColIterator(): Iterator[(Coord, H)] = new LinearIterator(pos => (pos % height, pos / height))
+  def colByRowIterator(): Iterator[(Coord, H)] = new LinearIterator(pos => (pos / numColumns, pos % numColumns))
+  def rowByColIterator(): Iterator[(Coord, H)] = new LinearIterator(pos => (pos % numRows, pos / numRows))
   def iterator: Iterator[(Coord, H)] = colByRowIterator()
 }
 
 object RectangularHexGrid {
   import scala.reflect.ClassTag
+  
+  def immutable[H, C <: CoordSystem](coords: C, maxCol: Int, maxRow: Int, generator: (Int, Int) => H): ImmutableRectangularHexGrid[H, C] = 
+    immutable(coords, (0, maxCol), (0, maxRow), generator)
   def immutable[H, C <: CoordSystem](coords: C, colRange: (Int, Int), rowRange: (Int, Int), generator: (Int, Int) => H) =
     ImmutableRectangularHexGrid(coords, colRange, rowRange, (colRange._1 to colRange._2).toList.map(c => (rowRange._1 to rowRange._2).toList.map(generator(c, _))))
+  
+  def mutable[H: ClassTag, C <: CoordSystem](coords: C, maxCol: Int, maxRow: Int, generator: (Int, Int) => H): MutableRectangularHexGrid[H, C] = 
+    mutable(coords, (0, maxCol), (0, maxRow), generator)
   def mutable[H: ClassTag, C <: CoordSystem](coords: C, colRange: (Int, Int), rowRange: (Int, Int), generator: (Int, Int) => H) =
     MutableRectangularHexGrid[H, C](coords, colRange, rowRange, ArraySeq.tabulate(colRange._2 - colRange._1 + 1, rowRange._2 - rowRange._1 + 1)((c, r) => generator(c+colRange._1, r+rowRange._1)))
 }
