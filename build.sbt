@@ -18,7 +18,9 @@ lazy val root = (project in file("."))
 
     resolvers ++= Resolver.sonatypeOssRepos("public"),
     resolvers += Resolver.githubPackages("jarrahtech"),
-    libraryDependencies += "com.novocode" % "junit-interface" % "0.11" % "test",
+
+    libraryDependencies += "org.scalatest" %% "scalatest" % "3.2.15" % "test",
+    libraryDependencies += "org.scalatest" %% "scalatest-funsuite" % "3.2.15" % "test",
 
     wartremoverErrors ++= Warts.unsafe
   )

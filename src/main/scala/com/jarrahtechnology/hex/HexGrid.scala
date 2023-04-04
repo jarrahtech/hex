@@ -10,9 +10,9 @@ trait HexGrid[+H, C <: CoordSystem] extends CoordinatedHexes[H, C] {
   def range(center: Coord, distance: Int): IndexedSeq[H] = range(coords.toCube(center), distance, hexAt)
   def rangeWithCoord(center: Coord, distance: Int): IndexedSeq[(Coord, H)] = range(coords.toCube(center), distance, hexAtWithCoord)
   def range[T](center: CubeCoord, distance: Int, f: (Coord) => Option[T]): IndexedSeq[T] = for {
-    x <- -distance to distance
-    y <- math.max(-distance, -x - distance) to math.max(distance, -x + distance)
-    h <- f(coords.toCoord(center + CubeCoord(x, y, -x - y)))
+    q <- -distance to distance
+    r <- math.max(-distance, -q - distance) to math.min(distance, -q + distance)
+    h <- f(coords.toCoord(center + CubeCoord(q, r, -q - r)))
   } yield h
 
   def closest(from: Coord)(inZone: List[Coord]): Option[H] = findInZone(from, inZone, coords.closest, hexAt)

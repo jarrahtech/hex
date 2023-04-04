@@ -12,9 +12,8 @@ trait ImmutableCoordinatedHexes[+H, C <: CoordSystem, +CH[X, Y <: CoordSystem] <
   def set[T >: H](hs: Map[Coord, T]): CH[T, C] 
 }
 
-trait MutableCoordinatedHexes[+H, C <: CoordSystem] {
-  type T <: H
+trait MutableCoordinatedHexes[H, C <: CoordSystem] {
   // do nothing if pos not in the grid
-  def set(pos: Coord, h: T): Unit
-  def set(hs: Map[Coord, T]): Unit = hs.foreach(h => set(h._1, h._2))
+  def set(pos: Coord, h: H): Unit
+  def set(hs: Map[Coord, H]): Unit = hs.foreach(h => set(h._1, h._2))
 }

@@ -11,7 +11,7 @@ import scala.collection.mutable.ArraySeq
   * @param rowRange inclusive from low -> high
   * @param hexes
   */
-class RectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: CommonSeq[CommonSeq[H]]) extends HexGrid[H, C] {
+trait RectangularHexGrid[+H, C <: CoordSystem](coords: C, colRange: (Int, Int), rowRange: (Int, Int), hexes: CommonSeq[CommonSeq[H]]) extends HexGrid[H, C] {
   val numColumns: Int = colRange._2 - colRange._1 + 1
   val numRows: Int = rowRange._2 - rowRange._1 + 1
   override val size: Int = numColumns * numRows
@@ -26,16 +26,16 @@ class RectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int
   def hexAt(pos: Coord): Option[H] = if (valid(pos)) Some(get(pos)) else None
 
   private class LinearIterator(traverse: Int => (Int, Int)) extends Iterator[(Coord, H)] {
-    @SuppressWarnings(Array("org.wartremover.warts.Var")) private var pos = -1;
+    @SuppressWarnings(Array("org.wartremover.warts.Var")) private var pos = 0;
     override def hasNext: Boolean = pos < RectangularHexGrid.this.size
     override def next(): (Coord, H) = {
-      pos = pos + 1;
       val (col, row) = traverse(pos)
+      pos = pos + 1;
       (Coord(col+colRange._1, row+rowRange._1), hexes(col)(row))
     }
   }
-  def colByRowIterator(): Iterator[(Coord, H)] = new LinearIterator(pos => (pos / numColumns, pos % numColumns))
-  def rowByColIterator(): Iterator[(Coord, H)] = new LinearIterator(pos => (pos % numRows, pos / numRows))
+  def colByRowIterator(): Iterator[(Coord, H)] = new LinearIterator(pos => (pos / numRows, pos % numRows))
+  def rowByColIterator(): Iterator[(Coord, H)] = new LinearIterator(pos => (pos % numColumns, pos / numColumns))
   def iterator: Iterator[(Coord, H)] = colByRowIterator()
 }
 
@@ -53,21 +53,21 @@ object RectangularHexGrid {
     MutableRectangularHexGrid[H, C](coords, colRange, rowRange, ArraySeq.tabulate(colRange._2 - colRange._1 + 1, rowRange._2 - rowRange._1 + 1)((c, r) => generator(c+colRange._1, r+rowRange._1)))
 }
 
-class ImmutableRectangularHexGrid[+H, C <: CoordSystem](coords: C, colRange: (Int, Int), rowRange: (Int, Int), hexes: List[List[H]])
+case class ImmutableRectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: List[List[H]])
     extends RectangularHexGrid[H, C](coords, colRange, rowRange, hexes) with ImmutableCoordinatedHexes[H, C, ImmutableRectangularHexGrid] {
 
   def set[T >: H](pos: Coord, h: T): ImmutableRectangularHexGrid[T, C] = {
-    if (valid(pos)) new ImmutableRectangularHexGrid(coords, colRange, rowRange, hexes.updated(pos.column, hexes(pos.column-colRange._1).updated(pos.row-rowRange._1, h)))  
+    if (valid(pos)) new ImmutableRectangularHexGrid(coords, colRange, rowRange, hexes.updated(pos.column-colRange._1, hexes(pos.column-colRange._1).updated(pos.row-rowRange._1, h)))  
     else this
   }
   def set[T >: H](hs: Map[Coord, T]): ImmutableRectangularHexGrid[T, C] = {
-    def valueAt(col: Int, row: Int) = hs.getOrElse(Coord(col, row), hexes(col)(row))
-    new ImmutableRectangularHexGrid(coords, colRange, rowRange, (colRange._1 to colRange._2).toList.map(c => (rowRange._1 to rowRange._2).toList.map(r => valueAt(c-colRange._1, r-rowRange._1))))
+    def valueAt(col: Int, row: Int) = hs.getOrElse(Coord(col, row), hexes(col-colRange._1)(row-rowRange._1))
+    new ImmutableRectangularHexGrid(coords, colRange, rowRange, (colRange._1 to colRange._2).toList.map(c => (rowRange._1 to rowRange._2).toList.map(r => valueAt(c, r))))
   } 
 }
 
-class MutableRectangularHexGrid[+H, C <: CoordSystem](coords: C, colRange: (Int, Int), rowRange: (Int, Int), hexes: ArraySeq[ArraySeq[H]])
+case class MutableRectangularHexGrid[H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: ArraySeq[ArraySeq[H]])
     extends RectangularHexGrid[H, C](coords, colRange, rowRange, hexes) with MutableCoordinatedHexes[H, C] {
-
-  def set(pos: Coord, h: T): Unit = if (valid(pos)) hexes(pos.column).update(pos.row, h)
+  
+  def set(pos: Coord, h: H): Unit = if (valid(pos)) hexes(pos.column-colRange._1).update(pos.row-rowRange._1, h)
 }
