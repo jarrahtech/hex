@@ -25,21 +25,21 @@ trait CoordSystem {
   def furthest(from: Coord)(zone: List[Coord]): Option[Coord] = zone.maxByOption(distance(from)(_))
 }
 
-private trait HorizontalCoordSystem extends CoordSystem { // pointy tops
+private sealed trait HorizontalCoordSystem extends CoordSystem { // pointy tops
   import Direction.*
   def isHorizontal = true
   def validDirections = List(NorthEast, East, SouthEast, SouthWest, West, NorthWest)
   protected def neighborLine(pos: Coord) = pos.y & 1
 }
 
-private trait VerticalCoordSystem extends CoordSystem { // flat tops
+private sealed trait VerticalCoordSystem extends CoordSystem { // flat tops
   import Direction.*
   def isHorizontal = false
   def validDirections = List(North, NorthEast, SouthEast, South, SouthWest, NorthWest)
   protected def neighborLine(pos: Coord) = pos.x & 1
 }
 
-case object EvenHorizontalCoordSystem extends HorizontalCoordSystem {
+final case class EvenHorizontalCoordSystem() extends HorizontalCoordSystem {
   import Coord.*
   val isEven = true
   protected def neighborShifts = List(
@@ -50,7 +50,7 @@ case object EvenHorizontalCoordSystem extends HorizontalCoordSystem {
   def toCoord(c: CubeCoord) = Coord(c.q + (c.r + (c.r & 1)) / 2, c.r)
 }
 
-case object EvenVerticalCoordSystem extends VerticalCoordSystem {
+final case class EvenVerticalCoordSystem() extends VerticalCoordSystem {
   import Coord.*
   val isEven = true
   protected def neighborShifts = List(
@@ -61,7 +61,7 @@ case object EvenVerticalCoordSystem extends VerticalCoordSystem {
   def toCoord(c: CubeCoord) = Coord(c.q, c.r + (c.q + (c.q & 1)) / 2)
 }
 
-case object OddHorizontalCoordSystem extends HorizontalCoordSystem {
+final case class OddHorizontalCoordSystem() extends HorizontalCoordSystem {
   import Coord.*
   val isEven = false
   protected def neighborShifts = List(
@@ -72,7 +72,7 @@ case object OddHorizontalCoordSystem extends HorizontalCoordSystem {
   def toCoord(c: CubeCoord) = Coord(c.q + (c.r - (c.r & 1)) / 2, c.r)
 }
 
-case object OddVerticalCoordSystem extends VerticalCoordSystem {
+final case class OddVerticalCoordSystem() extends VerticalCoordSystem {
   import Coord.*
   val isEven = false
   protected def neighborShifts = List(
@@ -81,4 +81,11 @@ case object OddVerticalCoordSystem extends VerticalCoordSystem {
   )
   def toCube(c: Coord) = CubeCoord(c.x, c.y - (c.x - (c.x & 1)) / 2)
   def toCoord(c: CubeCoord) = Coord(c.q, c.r + (c.q - (c.q & 1)) / 2)
+}
+
+object CoordSystem {
+  val evenVertical = EvenVerticalCoordSystem()
+  val evenHorizontal = EvenHorizontalCoordSystem()
+  val oddVertical = OddVerticalCoordSystem()
+  val oddHorizontal = OddHorizontalCoordSystem()
 }

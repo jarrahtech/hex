@@ -6,7 +6,7 @@ See: [https://www.redblobgames.com/grids/hexagons/](https://www.redblobgames.com
 
 ## Todo
 
-* sparseGrid, overlayGrid, hexPath, hexCollection
+* hexPath
 * flood fill
   
 * A*
