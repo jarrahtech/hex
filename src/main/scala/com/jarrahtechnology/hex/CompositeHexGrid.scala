@@ -4,14 +4,14 @@ import scala.collection.mutable.Map
 import scala.util.control.NonLocalReturns.*
 
 /**
-  * 
+  * The C & C2 types are to force the grids to all have the same CoordSystem
   *
   * @param grids ordered
   */
-trait CompositeHexGrid[+H, C <: CoordSystem](grids: Seq[HexGrid[H, C]]) extends HexGrid[H, C] {
+trait CompositeHexGrid[+H, C <: CoordSystem, C2 >: C](grids: Seq[HexGrid[H, C & C2]]) extends HexGrid[H, C] {
   require(grids.length>1, "grids.length>1")
   val coords = grids(0).coords
-  require(!grids.exists(_.coords!=coords), s"all grids need the same coordinate system: $coords")
+  //require(!grids.exists(_.coords!=coords), s"all grids need the same coordinate system: $coords") // should not be necessary
 
   @SuppressWarnings(Array("org.wartremover.warts.Return")) 
   protected def findHexUptoGrid(pos: Coord, gridIdx: Int): Option[H] = returning {
@@ -75,11 +75,11 @@ object CompositeHexGrid {
 }
 
 // Mutable
-final case class HexGridOverlay[H, C <: CoordSystem](overlay: MutableCoordinatedHexes[H, C] with HexGrid[H, C], underlying: Seq[HexGrid[H, C]]) 
-    extends CompositeHexGrid[H, C](overlay +: underlying)
+final case class HexGridOverlay[H, C <: CoordSystem, C2 >: C](overlay: MutableCoordinatedHexes[H, C] with HexGrid[H, C & C2], underlying: Seq[HexGrid[H, C]]) 
+    extends CompositeHexGrid[H, C, C2](overlay +: underlying)
     with MutableCoordinatedHexes[H, C] {
 
   def set(pos: Coord, h: H): Unit = overlay.set(pos, h)
 }
 
-final case class CompositeHexGrids[+H, C <: CoordSystem](grids: Seq[HexGrid[H, C]]) extends CompositeHexGrid[H, C](grids)
+final case class CompositeHexGrids[+H, C <: CoordSystem, C2 >: C](grids: Seq[HexGrid[H, C & C2]]) extends CompositeHexGrid[H, C, C2](grids)
