@@ -11,7 +11,6 @@ class SparseHexGridTest extends AnyFunSuite {
     val grid = ImmutableSparseHexGrid(EvenHorizontalCoordSystem(), Map(Coord.zero -> "a", Coord(1,1) -> "b"))
     assert(EvenHorizontalCoordSystem() == grid.coords)
     assert(grid.hexAt(Coord.zero) == Some("a"))
-    assert(grid.hexAtWithCoord(Coord.zero) == Some(Coord.zero, "a"))
     assert(grid.hexAt(Coord(0, 1)) == None)
   }
 
@@ -19,7 +18,6 @@ class SparseHexGridTest extends AnyFunSuite {
     val grid = MutableSparseHexGrid(OddVerticalCoordSystem(), collection.mutable.Map(Coord.zero -> "a", Coord(1,1) -> "b"))
     assert(OddVerticalCoordSystem() == grid.coords)
     assert(grid.hexAt(Coord.zero) == Some("a"))
-    assert(grid.hexAtWithCoord(Coord.zero) == Some(Coord.zero, "a"))
     assert(grid.hexAt(Coord(0, 1)) == None)
   }
 

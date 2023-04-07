@@ -52,7 +52,7 @@ object RectangularHexGrid {
 
 final case class ImmutableRectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: List[List[H]])
     extends RectangularHexGrid[H, C](coords, colRange, rowRange, hexes) 
-    with ImmutableCoordinatedHexes[H, C, ImmutableRectangularHexGrid] 
+    with ImmutableHexGrid[H, C, ImmutableRectangularHexGrid] 
     with RectangularGrid(colRange, rowRange) {
 
   def set[T >: H](pos: Coord, h: T): ImmutableRectangularHexGrid[T, C] = {
@@ -67,7 +67,7 @@ final case class ImmutableRectangularHexGrid[+H, C <: CoordSystem](val coords: C
 
 final case class MutableRectangularHexGrid[H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: ArraySeq[ArraySeq[H]])
     extends RectangularHexGrid[H, C](coords, colRange, rowRange, hexes) 
-    with MutableCoordinatedHexes[H, C]
+    with MutableHexGrid[H, C]
     with RectangularGrid(colRange, rowRange) {
   
   def set(pos: Coord, h: H): Unit = if (inBounds(pos)) hexes(pos.column-colRange._1).update(pos.row-rowRange._1, h)

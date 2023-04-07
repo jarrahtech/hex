@@ -158,7 +158,7 @@ class RectangularGridTest extends AnyFunSuite {
 
   test("Neighbors with coord") {
     val grid = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), (-2,2), (0,4), (c,r) => s"(${c},${r})")
-    assert(List((Coord(1,2), "(1,2)"), (Coord(2,1), "(2,1)"), (Coord(1,0), "(1,0)"), (Coord(0,0), "(0,0)"), (Coord(0,1), "(0,1)"), (Coord(0,2), "(0,2)")) == grid.neighborsWithCoord(Coord(1, 1)))
+    assert(List("(1,2)","(2,1)","(1,0)","(0,0)","(0,1)","(0,2)") == grid.neighbors(Coord(1, 1)))
   }
 
   test("Neighbors") {
@@ -168,7 +168,7 @@ class RectangularGridTest extends AnyFunSuite {
 
   test("Range") {
     val grid = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), (-2,2), (0,4), (c,r) => s"(${c},${r})")
-    assert(grid.rangeWithCoord(Coord(1, 1), 1)==Vector((Coord(0, 1), "(0,1)"), (Coord(0, 2), "(0,2)"), (Coord(0, 0), "(0,0)"), (Coord(1, 1), "(1,1)"), (Coord(1, 2), "(1,2)"), (Coord(1, 0), "(1,0)"), (Coord(2, 1), "(2,1)")))
+    assert(grid.range(Coord(1, 1), 1)==Vector("(0,1)", "(0,2)", "(0,0)", "(1,1)", "(1,2)", "(1,0)", "(2,1)"))
   }
 
   test("Closest") {
@@ -188,7 +188,8 @@ class RectangularGridTest extends AnyFunSuite {
 
   test("Furthest") {
     val grid = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), (-2,2), (0,4), (c,r) => s"(${c},${r})")
-    assert(grid.furthestWithCoord(Coord(1, 1))(List(Coord(1, 3), Coord(-2, -2), Coord(0, 2)))==None)
-    assert(grid.furthestWithCoord(Coord(1, 1))(List(Coord(1, 3), Coord(-2, 4), Coord(0, 2)))==Some((Coord(-2,4),"(-2,4)")))
+    assert(grid.furthest(Coord(1, 1))(List(Coord(1, 3), Coord(-2, -2), Coord(0, 2)))==None)
+    assert(grid.furthest(Coord(1, 1))(List(Coord(1, 3), Coord(-2, 4), Coord(0, 2)))==Some("(-2,4)"))
   }
+
 }

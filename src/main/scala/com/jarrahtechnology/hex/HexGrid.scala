@@ -1,14 +1,14 @@
 package com.jarrahtechnology.hex
 
-trait HexGrid[+H, C <: CoordSystem] extends CoordinatedHexes[H, C] {
+trait HexGrid[+H, C <: CoordSystem] extends Iterable[(Coord, H)] {
+  def coords: C
+  def hexAt(pos: Coord): Option[H]
   def distance = coords.distance
 
   def neighbors(pos: Coord): List[H] = neighbors(pos, hexAt)
-  def neighborsWithCoord(pos: Coord): List[(Coord, H)] = neighbors(pos, hexAtWithCoord)
   def neighbors[T](pos: Coord, f: (Coord) => Option[T]): List[T] = coords.neighbors(pos).map(f).flatten
 
   def range(center: Coord, distance: Int): IndexedSeq[H] = range(coords.toCube(center), distance, hexAt)
-  def rangeWithCoord(center: Coord, distance: Int): IndexedSeq[(Coord, H)] = range(coords.toCube(center), distance, hexAtWithCoord)
   def range[T](center: CubeCoord, distance: Int, f: (Coord) => Option[T]): IndexedSeq[T] = for {
     q <- -distance to distance
     r <- math.max(-distance, -q - distance) to math.min(distance, -q + distance)
@@ -16,8 +16,18 @@ trait HexGrid[+H, C <: CoordSystem] extends CoordinatedHexes[H, C] {
   } yield h
 
   def closest(from: Coord)(inZone: List[Coord]): Option[H] = findInZone(from, inZone, coords.closest, hexAt)
-  def closestWithCoord(from: Coord)(inZone: List[Coord]): Option[(Coord, H)] = findInZone(from, inZone, coords.closest, hexAtWithCoord)
   def furthest(from: Coord)(inZone: List[Coord]): Option[H] = findInZone(from, inZone, coords.furthest, hexAt)
-  def furthestWithCoord(from: Coord)(inZone: List[Coord]): Option[(Coord, H)] = findInZone(from, inZone, coords.furthest, hexAtWithCoord)
   def findInZone[T](from: Coord, inZone: List[Coord], find: Coord => List[Coord] => Option[Coord], trans: Coord => Option[T]): Option[T] = find(from)(inZone).flatMap(trans)
+}
+
+trait ImmutableHexGrid[+H, C <: CoordSystem, +CH[X, Y <: CoordSystem] <: HexGrid[X, Y]] {
+  // do nothing if pos not in the grid
+  def set[T >: H](pos: Coord, h: T): CH[T, C]
+  def set[T >: H](hs: Map[Coord, T]): CH[T, C] 
+}
+
+trait MutableHexGrid[H, C <: CoordSystem] {
+  // do nothing if pos not in the grid
+  def set(pos: Coord, h: H): Unit
+  def set(hs: Map[Coord, H]): Unit = hs.foreach(h => set(h._1, h._2))
 }
