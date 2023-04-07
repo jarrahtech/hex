@@ -198,4 +198,52 @@ class RectangularGridTest extends AnyFunSuite {
     assert(grid.furthest(Coord(1, 1))(List(Coord(1, 3), Coord(-2, 4), Coord(0, 2)))==Some("(-2,4)"))
   }
 
+  test("Union overlap") {
+    val grid1 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), 2, 2, (c,r) => "x")
+    val grid2 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), 3, 3, (c,r) => "y")
+    val union = HexGrid.union(grid1, grid2)
+    assert(union.size==16)
+    assert(union.hexAt(Coord.zero)==Some("x"))
+    assert(union.hexAt(Coord(3,3))==Some("y"))
+  }
+
+  test("Union disjoint") {
+    val grid1 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), 2, 2, (c,r) => "x")
+    val grid2 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), (10, 12), (10, 12), (c,r) => "y")
+    val union = HexGrid.union(grid1, grid2)
+    assert(union.size==18)
+    assert(union.hexAt(Coord.zero)==Some("x"))
+    assert(union.hexAt(Coord(3,3))==None)
+    assert(union.hexAt(Coord(11,11))==Some("y"))
+  }
+
+  test("Intersection overlap") {
+    val grid1 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), 2, 2, (c,r) => "x")
+    val grid2 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), 3, 3, (c,r) => "y")
+    val intersection = HexGrid.intersection(grid1, grid2)
+    assert(intersection.size==9)
+    assert(intersection.hexAt(Coord.zero)==Some("x"))
+    assert(intersection.hexAt(Coord(3,3))==None)
+  }
+
+  test("Intersection disjoint") {
+    val grid1 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), 2, 2, (c,r) => "x")
+    val grid2 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), (10, 12), (10, 12), (c,r) => "y")
+    val intersection = HexGrid.intersection(grid1, grid2)
+    assert(intersection.size==0)
+    assert(intersection.hexAt(Coord.zero)==None)
+    assert(intersection.hexAt(Coord(3,3))==None)
+    assert(intersection.hexAt(Coord(11,11))==None)
+  }
+
+  test("Intersection empty") {
+    val grid1 = ImmutableSparseHexGrid(EvenHorizontalCoordSystem(), Map())
+    val grid2 = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), (10, 12), (10, 12), (c,r) => "y")
+    val intersection = HexGrid.intersection(grid1, grid2)
+    assert(intersection.size==0)
+    assert(intersection.hexAt(Coord.zero)==None)
+    assert(intersection.hexAt(Coord(3,3))==None)
+    assert(intersection.hexAt(Coord(11,11))==None)
+  }
+
 }

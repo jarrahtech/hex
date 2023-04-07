@@ -33,3 +33,10 @@ trait MutableHexGrid[H, C <: CoordSystem] {
   def set(pos: Coord, h: H): Unit
   def set(hs: Map[Coord, H]): Unit = hs.foreach(h => set(h._1, h._2))
 }
+
+object HexGrid {
+  def union[H, C <: CoordSystem](grid1: HexGrid[H, C], grid2: HexGrid[H, C]) = CompositeHexGrids(List(grid1, grid2))
+  def intersection[H, C <: CoordSystem, C2 >: C](grid1: HexGrid[H, C & C2], grid2: HexGrid[H, C & C2]) = 
+    // take hexes from first grid in preference
+    ImmutableSparseHexGrid(grid1.coords, grid1.iterator.foldLeft(Map[Coord, H]())((m, h) => if (grid2.hexAt(h._1).isDefined) m.updated(h._1, h._2) else m))
+}

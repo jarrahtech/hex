@@ -67,6 +67,9 @@ class CompositeHexGridTest extends AnyFunSuite {
     assertThrows[IllegalArgumentException] {
       CompositeHexGrids(List(RectangularHexGrid.immutable(EvenVerticalCoordSystem(), 4, 4, (c,r) => s"(${c},${r})")))
     }
+
+    // the below should not compile
+    //CompositeHexGrids(List(RectangularHexGrid.immutable(EvenVerticalCoordSystem(), 4, 4, (c,r) => "x"), RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), 4, 4, (c,r) => "x")))
   }
 
   test("CompositeHexGrids constructor") {
