@@ -5,6 +5,8 @@ trait HexGrid[+H, C <: CoordSystem] extends Iterable[(Coord, H)] {
   def hexAt(pos: Coord): Option[H]
   def distance = coords.distance
 
+  def neighbor(pos: Coord, dir: Direction): Option[H] = neighbor(pos, dir, hexAt)
+  def neighbor[T](pos: Coord, dir: Direction, f: (Coord) => Option[T]): Option[T] = coords.neighbor(pos)(dir).flatMap(f)
   def neighbors(pos: Coord): List[H] = neighbors(pos, hexAt)
   def neighbors[T](pos: Coord, f: (Coord) => Option[T]): List[T] = coords.neighbors(pos).map(f).flatten
 

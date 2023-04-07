@@ -166,6 +166,12 @@ class RectangularGridTest extends AnyFunSuite {
     assert(List("(1,2)", "(1,0)", "(0,0)", "(0,1)", "(0,2)") == grid.neighbors(Coord(1, 1)))
   }
 
+  test("Neighbor") {
+    val grid = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), 4, 4, (c,r) => s"(${c},${r})")
+    assert(grid.neighbor(Coord.zero, Direction.North)==None)
+    assert(grid.neighbor(Coord(1, 1), Direction.SouthEast)==Some("(1,0)"))
+  }
+
   test("Range") {
     val grid = RectangularHexGrid.immutable(EvenHorizontalCoordSystem(), (-2,2), (0,4), (c,r) => s"(${c},${r})")
     assert(grid.range(Coord(1, 1), 1)==Vector("(0,1)", "(0,2)", "(0,0)", "(1,1)", "(1,2)", "(1,0)", "(2,1)"))
