@@ -6,9 +6,7 @@ See: [https://www.redblobgames.com/grids/hexagons/](https://www.redblobgames.com
 
 ## Todo
 
-* hexPath
-* flood fill
-  
+* HexPath (and rotate)
 * A*
 * rings, spirals
 * fov
