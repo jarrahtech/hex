@@ -1,5 +1,7 @@
 package com.jarrahtechnology.hex
 
+import com.jarrahtechnology.util.Math.truncate
+
 final case class Coord(x: Int, y: Int) {
     inline def column = x
     inline def row = y
@@ -36,14 +38,16 @@ object CubeCoord {
 
     def apply(q: Int, r: Int): CubeCoord = CubeCoord(q, r, -q-r)
 
-    def round(x: Float, y: Float, z: Float) = {
-        val rx = math.round(x)
-        val ry = math.round(y)
-        val rz = math.round(z)
-
-        val x_diff = math.abs(rx - x)
-        val y_diff = math.abs(ry - y)
-        val z_diff = math.abs(rz - z)
+    def round(x: Double, y: Double, z: Double): CubeCoord = round(x, y, z, 6)
+    def round(x: Double, y: Double, z: Double, decimalAccuracy: Int): CubeCoord = {
+        val rx = math.round(x).toInt
+        val ry = math.round(y).toInt
+        val rz = math.round(z).toInt
+        
+        val trunc = truncate(decimalAccuracy)
+        val x_diff = trunc(math.abs(rx - x))
+        val y_diff = trunc(math.abs(ry - y))
+        val z_diff = trunc(math.abs(rz - z))
 
         if (x_diff > y_diff && x_diff > z_diff) {
             CubeCoord(-ry-rz, ry, rz)

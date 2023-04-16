@@ -1,5 +1,7 @@
 package com.jarrahtechnology.hex
 
+import com.jarrahtechnology.util.Vector2
+
 trait CoordSystem {
   def isHorizontal: Boolean
   def isEven: Boolean
@@ -23,6 +25,24 @@ trait CoordSystem {
   def distance(c1: Coord)(c2: Coord) = toCube(c1).distance(toCube(c2))
   def closest(from: Coord)(zone: List[Coord]): Option[Coord] = zone.minByOption(distance(from)(_))
   def furthest(from: Coord)(zone: List[Coord]): Option[Coord] = zone.maxByOption(distance(from)(_))
+
+  protected def axialFromRadii(radiiPos: Vector2): Vector2
+  def fromRadii(radiiPos: Vector2): Coord = {
+    val axial = axialFromRadii(radiiPos)
+    toCoord(CubeCoord.round(axial.x, axial.y, -axial.x-axial.y))
+  }
+  def toRadii(coord: Coord): Vector2
+ 
+  def hexRadiiWidth: Double
+  def hexRadiiHeight: Double
+  def hexRadiiDimensions = Vector2(hexRadiiWidth, hexRadiiHeight)
+  
+  def rectangularGridRadiiWidth(widthInHexes: Int, heightInHexes: Int): Double
+  def rectangularGridRadiiHeight(widthInHexes: Int, heightInHexes: Int): Double
+  def rectangularGridRadiiDimensions(widthInHexes: Int, heightInHexes: Int) = {
+    require(widthInHexes>=0 && heightInHexes>=0, "grid size>=0")
+    Vector2(rectangularGridRadiiWidth(widthInHexes, heightInHexes), rectangularGridRadiiHeight(widthInHexes, heightInHexes))
+  }
 }
 
 private sealed trait HorizontalCoordSystem extends CoordSystem { // pointy tops
@@ -30,6 +50,18 @@ private sealed trait HorizontalCoordSystem extends CoordSystem { // pointy tops
   def isHorizontal = true
   def validDirections = List(NorthEast, East, SouthEast, SouthWest, West, NorthWest)
   protected def neighborLine(pos: Coord) = pos.y & 1
+
+  def axialFromRadii(radiiPos: Vector2) = Vector2(root3div3 * radiiPos.x  - radiiPos.y/3f, twoThirds * radiiPos.y)
+  def hexRadiiWidth = root3
+  def hexRadiiHeight = 2
+  def rectangularGridRadiiWidth(widthInHexes: Int, heightInHexes: Int) = {
+    require(widthInHexes>=0 && heightInHexes>=0, "grid size>=0")
+    (widthInHexes + (if (heightInHexes>1) 0.5f else 0)) * hexRadiiWidth
+  }
+  def rectangularGridRadiiHeight(widthInHexes: Int, heightInHexes: Int) = {
+    require(widthInHexes>=0 && heightInHexes>=0, "grid size>=0")
+    if (heightInHexes>0) (hexRadiiHeight*heightInHexes) - (heightInHexes-1)/2f else 0
+  }
 }
 
 private sealed trait VerticalCoordSystem extends CoordSystem { // flat tops
@@ -37,6 +69,18 @@ private sealed trait VerticalCoordSystem extends CoordSystem { // flat tops
   def isHorizontal = false
   def validDirections = List(North, NorthEast, SouthEast, South, SouthWest, NorthWest)
   protected def neighborLine(pos: Coord) = pos.x & 1
+
+  def axialFromRadii(radiiPos: Vector2) = Vector2(twoThirds * radiiPos.x, root3div3 * radiiPos.y - radiiPos.x/3f)
+  def hexRadiiWidth = 2
+  def hexRadiiHeight = root3
+  def rectangularGridRadiiWidth(widthInHexes: Int, heightInHexes: Int) = {
+    require(widthInHexes>=0 && heightInHexes>=0, "grid size>=0")
+    if (widthInHexes>0) (hexRadiiWidth*widthInHexes) - (widthInHexes-1)/2f else 0
+  }
+  def rectangularGridRadiiHeight(widthInHexes: Int, heightInHexes: Int) = {
+    require(widthInHexes>=0 && heightInHexes>=0, "grid size>=0")
+    (heightInHexes + (if (widthInHexes>1) 0.5f else 0)) * hexRadiiHeight
+  }
 }
 
 final case class EvenHorizontalCoordSystem() extends HorizontalCoordSystem {
@@ -48,6 +92,7 @@ final case class EvenHorizontalCoordSystem() extends HorizontalCoordSystem {
   )
   def toCube(c: Coord) = CubeCoord(c.x - (c.y + (c.y & 1)) / 2, c.y)
   def toCoord(c: CubeCoord) = Coord(c.q + (c.r + (c.r & 1)) / 2, c.r)
+  def toRadii(c: Coord) = Vector2(root3 * (c.x - neighborLine(c)/2f), c.y / twoThirds)
 }
 
 final case class EvenVerticalCoordSystem() extends VerticalCoordSystem {
@@ -59,6 +104,7 @@ final case class EvenVerticalCoordSystem() extends VerticalCoordSystem {
   )
   def toCube(c: Coord) = CubeCoord(c.x, c.y - (c.x + (c.x & 1)) / 2)
   def toCoord(c: CubeCoord) = Coord(c.q, c.r + (c.q + (c.q & 1)) / 2)
+  def toRadii(c: Coord) = Vector2(c.x / twoThirds, root3 * (c.y - neighborLine(c)/2f))
 }
 
 final case class OddHorizontalCoordSystem() extends HorizontalCoordSystem {
@@ -70,6 +116,7 @@ final case class OddHorizontalCoordSystem() extends HorizontalCoordSystem {
   )
   def toCube(c: Coord) = CubeCoord(c.x - (c.y - (c.y & 1)) / 2, c.y)
   def toCoord(c: CubeCoord) = Coord(c.q + (c.r - (c.r & 1)) / 2, c.r)
+  def toRadii(c: Coord) = Vector2(root3 * (c.x + neighborLine(c)/2f), c.y / twoThirds)
 }
 
 final case class OddVerticalCoordSystem() extends VerticalCoordSystem {
@@ -81,6 +128,7 @@ final case class OddVerticalCoordSystem() extends VerticalCoordSystem {
   )
   def toCube(c: Coord) = CubeCoord(c.x, c.y - (c.x - (c.x & 1)) / 2)
   def toCoord(c: CubeCoord) = Coord(c.q, c.r + (c.q - (c.q & 1)) / 2)
+  def toRadii(c: Coord) = Vector2(c.x / twoThirds, root3 * (c.y + neighborLine(c)/2f))
 }
 
 object CoordSystem {

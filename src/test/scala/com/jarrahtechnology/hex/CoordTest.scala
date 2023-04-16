@@ -60,4 +60,9 @@ class CoordTest extends AnyFunSuite {
     assert(CubeCoord(1, 2, -3)==CubeCoord.round(1.3, 2, -3.7))
   }
 
+  test("CubeCoordRound Precision") {
+    // presision is so large that numerical errors creep in, but if you really want it....
+    assert(CubeCoord(-6, 2, 4)==CubeCoord.round(1.3, 2, 3.7, 32))
+  }
+
 }

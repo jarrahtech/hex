@@ -5,6 +5,8 @@ import org.scalatest.funsuite.AnyFunSuite
 import scala.language.implicitConversions
 import scala.language.postfixOps
 import Direction.*
+import CoordSystem._
+import com.jarrahtechnology.util.Vector2
 
 class CoordSystemTest extends AnyFunSuite {
 
@@ -119,5 +121,79 @@ class CoordSystemTest extends AnyFunSuite {
     assert(3 == OddHorizontalCoordSystem().distance(Coord.zero)(Coord(2,-2)))
     assert(4 == EvenHorizontalCoordSystem().distance(Coord(-1,1))(Coord(1,-2)))
     assert(2 == OddVerticalCoordSystem().distance(Coord(-2,-1))(Coord(-1, 0)))
+  }
+
+  test("fromRadii") {
+    assert(evenVertical.fromRadii(Vector2.zero)==Coord.zero)
+    assert(oddHorizontal.fromRadii(Vector2(2,1))==Coord(1,1))
+    assert(evenHorizontal.fromRadii(Vector2(-5,-3))==Coord(-3,-2))
+  }
+
+  test("toRadii") {
+    assert(evenHorizontal.toRadii(Coord.zero)==Vector2.zero)
+    assert(oddHorizontal.toRadii(Coord(0,1))==Vector2(root3/2d,1.5))
+    assert(evenVertical.toRadii(Coord(-1,1))==Vector2(-1.5, root3/2d))
+  }
+
+  test("hexRadiiWidth") {
+    assert(oddVertical.hexRadiiWidth==2 && evenVertical.hexRadiiWidth==2)
+    assert(oddHorizontal.hexRadiiWidth==math.sqrt(3) && oddHorizontal.hexRadiiWidth==math.sqrt(3))
+  }
+
+  test("hexRadiiHeight") {
+    assert(oddVertical.hexRadiiHeight==math.sqrt(3) && evenVertical.hexRadiiHeight==math.sqrt(3))
+    assert(oddHorizontal.hexRadiiHeight==2 && evenHorizontal.hexRadiiHeight==2)
+  }
+
+  test("hexRadiiDimensions") {
+    assert(oddVertical.hexRadiiDimensions==Vector2(2, math.sqrt(3)))
+    assert(evenHorizontal.hexRadiiDimensions==Vector2(math.sqrt(3), 2))
+  }
+
+  test("rectangularGridRadiiWidth") {
+    assert(oddVertical.rectangularGridRadiiWidth(0, 0)==0)
+    assert(oddHorizontal.rectangularGridRadiiWidth(5, 3)==5.5*root3)
+    assert(oddVertical.rectangularGridRadiiWidth(3, 7)==5)
+  }
+
+  test("rectangularGridRadiiWidth requires") {
+    assertThrows[IllegalArgumentException] {
+      oddVertical.rectangularGridRadiiWidth(-1, 0)
+    }
+    assertThrows[IllegalArgumentException] {
+      evenHorizontal.rectangularGridRadiiWidth(-100, -1)
+    }
+  }
+
+  test("rectangularGridRadiiHeight") {
+    assert(oddVertical.rectangularGridRadiiHeight(0, 0)==0)
+    assert(oddHorizontal.rectangularGridRadiiHeight(0, 0)==0)
+    assert(oddHorizontal.rectangularGridRadiiHeight(3, 5)==8)
+    assert(evenVertical.rectangularGridRadiiHeight(3, 7)==7.5*root3)
+    assert(evenVertical.rectangularGridRadiiHeight(1, 7)==7*root3)
+  }
+
+  test("rectangularGridRadiiHeight requires") {
+    assertThrows[IllegalArgumentException] {
+      oddVertical.rectangularGridRadiiHeight(-1, 0)
+    }
+    assertThrows[IllegalArgumentException] {
+      evenHorizontal.rectangularGridRadiiHeight(-100, -1)
+    }
+  }
+
+  test("rectangularGridRadiiDimensions") {
+    assert(oddVertical.rectangularGridRadiiDimensions(0, 0)==Vector2.zero)
+    assert(oddHorizontal.rectangularGridRadiiDimensions(5, 3)==Vector2(5.5*root3,5))
+    assert(evenVertical.rectangularGridRadiiDimensions(3, 7)==Vector2(5,7.5*root3))
+  }
+
+  test("rectangularGridRadiiDimensions requires") {
+    assertThrows[IllegalArgumentException] {
+      oddVertical.rectangularGridRadiiDimensions(-1, 0)
+    }
+    assertThrows[IllegalArgumentException] {
+      evenHorizontal.rectangularGridRadiiDimensions(4, -1)
+    }
   }
 }
