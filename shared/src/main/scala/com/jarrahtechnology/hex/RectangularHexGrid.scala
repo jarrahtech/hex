@@ -1,5 +1,6 @@
 package com.jarrahtechnology.hex
 
+import scala.scalajs.js.annotation._
 import scala.collection.Seq as CommonSeq
 import scala.collection.mutable.ArraySeq
 
@@ -36,6 +37,7 @@ trait RectangularHexGrid[+H, C <: CoordSystem](coords: C, colRange: (Int, Int), 
   def iterator: Iterator[(Coord, H)] = colByRowIterator()
 }
 
+@JSExportAll
 object RectangularHexGrid {
   import scala.reflect.ClassTag
   
@@ -50,6 +52,7 @@ object RectangularHexGrid {
     MutableRectangularHexGrid[H, C](coords, colRange, rowRange, ArraySeq.tabulate(colRange._2 - colRange._1 + 1, rowRange._2 - rowRange._1 + 1)((c, r) => generator(c+colRange._1, r+rowRange._1)))
 }
 
+@JSExportAll
 final case class ImmutableRectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: List[List[H]])
     extends RectangularHexGrid[H, C](coords, colRange, rowRange, hexes) 
     with ImmutableHexGrid[H, C, ImmutableRectangularHexGrid] 
@@ -65,6 +68,7 @@ final case class ImmutableRectangularHexGrid[+H, C <: CoordSystem](val coords: C
   } 
 }
 
+@JSExportAll
 final case class MutableRectangularHexGrid[H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: ArraySeq[ArraySeq[H]])
     extends RectangularHexGrid[H, C](coords, colRange, rowRange, hexes) 
     with MutableHexGrid[H, C]

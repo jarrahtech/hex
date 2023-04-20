@@ -1,5 +1,7 @@
 package com.jarrahtechnology
 
+import scala.scalajs.js.annotation._
+
 package object hex {
 
   val root3 = math.sqrt(3)
@@ -9,6 +11,7 @@ package object hex {
   val sideAngle = 60
   val circleAngle = hexSides*sideAngle
 
+  @JSExportAll
   enum Direction {
     case North, NorthEast, East, SouthEast, South, SouthWest, West, NorthWest
 

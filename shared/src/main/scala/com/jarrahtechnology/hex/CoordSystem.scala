@@ -1,6 +1,7 @@
 package com.jarrahtechnology.hex
 
 import com.jarrahtechnology.util.Vector2
+import scala.scalajs.js.annotation._
 
 trait CoordSystem {
   def isHorizontal: Boolean
@@ -83,6 +84,7 @@ private sealed trait VerticalCoordSystem extends CoordSystem { // flat tops
   }
 }
 
+@JSExportAll
 final case class EvenHorizontalCoordSystem() extends HorizontalCoordSystem {
   import Coord.*
   val isEven = true
@@ -95,6 +97,7 @@ final case class EvenHorizontalCoordSystem() extends HorizontalCoordSystem {
   def toRadii(c: Coord) = Vector2(root3 * (c.x - neighborLine(c)/2f), c.y / twoThirds)
 }
 
+@JSExportAll
 final case class EvenVerticalCoordSystem() extends VerticalCoordSystem {
   import Coord.*
   val isEven = true
@@ -107,6 +110,7 @@ final case class EvenVerticalCoordSystem() extends VerticalCoordSystem {
   def toRadii(c: Coord) = Vector2(c.x / twoThirds, root3 * (c.y - neighborLine(c)/2f))
 }
 
+@JSExportAll
 final case class OddHorizontalCoordSystem() extends HorizontalCoordSystem {
   import Coord.*
   val isEven = false
@@ -119,6 +123,7 @@ final case class OddHorizontalCoordSystem() extends HorizontalCoordSystem {
   def toRadii(c: Coord) = Vector2(root3 * (c.x + neighborLine(c)/2f), c.y / twoThirds)
 }
 
+@JSExportAll
 final case class OddVerticalCoordSystem() extends VerticalCoordSystem {
   import Coord.*
   val isEven = false
@@ -131,6 +136,7 @@ final case class OddVerticalCoordSystem() extends VerticalCoordSystem {
   def toRadii(c: Coord) = Vector2(c.x / twoThirds, root3 * (c.y + neighborLine(c)/2f))
 }
 
+@JSExportAll
 object CoordSystem {
   val evenVertical = EvenVerticalCoordSystem()
   val evenHorizontal = EvenHorizontalCoordSystem()

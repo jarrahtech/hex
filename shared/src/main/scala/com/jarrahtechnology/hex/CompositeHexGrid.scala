@@ -2,6 +2,7 @@ package com.jarrahtechnology.hex
 
 import scala.collection.mutable.Map
 import scala.util.control.NonLocalReturns.*
+import scala.scalajs.js.annotation._
 
 /**
   * The C & C2 types are to force the grids to all have the same CoordSystem
@@ -67,6 +68,7 @@ trait CompositeHexGrid[+H, C <: CoordSystem, C2 >: C](grids: Seq[HexGrid[H, C & 
   def iterator: Iterator[(Coord, H)] = new CompositeIterator()
 }
 
+@JSExportAll
 object CompositeHexGrid {
   def overlay[H, C <: CoordSystem](underlying: Seq[HexGrid[H, C]]) = {
     require(underlying.length>0, "underlying.length>0")
@@ -75,6 +77,7 @@ object CompositeHexGrid {
 }
 
 // Mutable
+@JSExportAll
 final case class HexGridOverlay[H, C <: CoordSystem, C2 >: C](overlay: MutableHexGrid[H, C] with HexGrid[H, C & C2], underlying: Seq[HexGrid[H, C]]) 
     extends CompositeHexGrid[H, C, C2](overlay +: underlying)
     with MutableHexGrid[H, C] {
@@ -82,4 +85,5 @@ final case class HexGridOverlay[H, C <: CoordSystem, C2 >: C](overlay: MutableHe
   def set(pos: Coord, h: H): Unit = overlay.set(pos, h)
 }
 
+@JSExportAll
 final case class CompositeHexGrids[+H, C <: CoordSystem, C2 >: C](grids: Seq[HexGrid[H, C & C2]]) extends CompositeHexGrid[H, C, C2](grids)

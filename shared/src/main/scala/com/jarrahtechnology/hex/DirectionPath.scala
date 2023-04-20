@@ -1,6 +1,9 @@
 package com.jarrahtechnology.hex
 
+import scala.scalajs.js.annotation._
+
 // if the direction option is None then standstill
+@JSExportAll
 final case class DirectionPath(val directions: Seq[Option[Direction]]) extends Iterable[Option[Direction]] {
   def length = directions.length
   require(length>0, "length>0")
@@ -66,6 +69,7 @@ final case class DirectionPath(val directions: Seq[Option[Direction]]) extends I
     toCoords(grid.coords)(start).map(_.zipWithIndex).foreach(_.foreach(c => fn(c._2, c._1, grid.hexAt(c._1))))
 }
 
+@JSExportAll
 object DirectionPath {
   val none = DirectionPath(List(None))
 }

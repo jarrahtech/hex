@@ -1,15 +1,18 @@
 package com.jarrahtechnology.hex
 
+import scala.scalajs.js.annotation._
 import com.jarrahtechnology.util.Math.truncate
 
+@JSExportAll
 final case class Coord(x: Int, y: Int) {
-    inline def column = x
-    inline def row = y
+    val column = x
+    val row = y
     def +(that: Coord) = Coord(x+that.x, y+that.y)
     def -(that: Coord) = Coord(x-that.x, y-that.y)
     def unary_- = Coord(-x, -y)
 }
 
+@JSExportAll
 object Coord {
     val zero = Coord(0, 0)
     val north = Coord(0, 1)

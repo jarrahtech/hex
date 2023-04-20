@@ -1,5 +1,8 @@
 package com.jarrahtechnology.hex
 
+import scala.scalajs.js.annotation._
+
+@JSExportAll
 object Flood {
   def fill[H, C <: CoordSystem](grid: HexGrid[H, C])(origin: Coord, dist: Int): HexGrid[H, C] = fill(grid, grid.hexAt)(origin, dist)
   

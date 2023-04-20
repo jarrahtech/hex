@@ -4,8 +4,9 @@
 .metals/
 .vscode/
 .bsp/
+.js/target/
+.jvm/target/
 target/
 project/.bloop
 project/project
 project/target
-example.png
