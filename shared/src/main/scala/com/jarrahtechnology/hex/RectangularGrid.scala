@@ -1,5 +1,6 @@
 package com.jarrahtechnology.hex
 
+// TODO: replace parameters with def (check everywhere)
 trait RectangularGrid(colRange: (Int, Int), rowRange: (Int, Int)) {
   val numColumns: Int = colRange._2 - colRange._1 + 1
   val numRows: Int = rowRange._2 - rowRange._1 + 1
