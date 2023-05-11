@@ -81,9 +81,9 @@ object CompositeHexGrid {
 final case class HexGridOverlay[H, C <: CoordSystem, C2 >: C](overlay: MutableHexGrid[H, C] with HexGrid[H, C & C2], underlying: Seq[HexGrid[H, C]]) 
     extends CompositeHexGrid[H, C, C2](overlay +: underlying)
     with MutableHexGrid[H, C] {
-
+  
   def set(pos: Coord, h: H): Unit = overlay.set(pos, h)
 }
 
 @JSExportAll
-final case class CompositeHexGrids[+H, C <: CoordSystem, C2 >: C](grids: Seq[HexGrid[H, C & C2]]) extends CompositeHexGrid[H, C, C2](grids)
+final case class CompositeHexGrids[+H, C <: CoordSystem, C2 >: C](val grids: Seq[HexGrid[H, C & C2]]) extends CompositeHexGrid[H, C, C2](grids)

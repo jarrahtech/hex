@@ -14,7 +14,7 @@ lazy val root = project.in(file(".")).
 lazy val hex = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   settings(
     name := "hex",
-    version := "0.3.1",
+    version := "0.3.2",
 
     resolvers ++= Resolver.sonatypeOssRepos("public"),
     resolvers += Resolver.githubPackages("jarrahtech"),
@@ -35,6 +35,7 @@ lazy val hex = crossProject(JSPlatform, JVMPlatform).in(file(".")).
       "-deprecation",
     ),
     libraryDependencies += "org.scala-js" %% "scalajs-stubs" % "1.1.0" % "provided",
+    
     Test / testOptions += Tests.Argument(TestFrameworks.ScalaTest, "-fW", "./target/scalatest.txt"),  
   ).
   jsSettings(

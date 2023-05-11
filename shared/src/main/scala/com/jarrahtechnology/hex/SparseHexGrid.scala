@@ -3,7 +3,8 @@ package com.jarrahtechnology.hex
 import scala.scalajs.js.annotation._
 import scala.collection.Map as CommonMap
 
-trait SparseHexGrid[+H, C <: CoordSystem](coords: C, hexes: CommonMap[Coord, H]) extends HexGrid[H, C] {
+trait SparseHexGrid[+H, C <: CoordSystem] extends HexGrid[H, C] {
+  def hexes: CommonMap[Coord, H]
   override def size: Int = hexes.size
   def hexAt(pos: Coord): Option[H] = hexes.get(pos)
   def iterator: Iterator[(Coord, H)] = hexes.iterator
@@ -11,7 +12,7 @@ trait SparseHexGrid[+H, C <: CoordSystem](coords: C, hexes: CommonMap[Coord, H])
 
 @JSExportAll
 final case class ImmutableSparseHexGrid[+H, C <: CoordSystem](val coords: C, val hexes: collection.immutable.Map[Coord, H])
-    extends SparseHexGrid[H, C](coords, hexes) 
+    extends SparseHexGrid[H, C]
     with HexGrid[H, C] 
     with ImmutableHexGrid[H, C, ImmutableSparseHexGrid] {
 
@@ -21,7 +22,7 @@ final case class ImmutableSparseHexGrid[+H, C <: CoordSystem](val coords: C, val
 
 @JSExportAll
 final case class MutableSparseHexGrid[H, C <: CoordSystem](val coords: C, val hexes: collection.mutable.Map[Coord, H])
-    extends SparseHexGrid[H, C](coords, hexes) 
+    extends SparseHexGrid[H, C]
     with HexGrid[H, C] 
     with MutableHexGrid[H, C] {
   

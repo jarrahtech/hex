@@ -3,6 +3,7 @@ package com.jarrahtechnology.hex
 import scala.scalajs.js.annotation._
 import scala.collection.Seq as CommonSeq
 import scala.collection.mutable.ArraySeq
+import com.jarrahtechnology.util.Vector2
 
 /**
   * 
@@ -12,9 +13,8 @@ import scala.collection.mutable.ArraySeq
   * @param rowRange inclusive from low -> high
   * @param hexes
   */
-trait RectangularHexGrid[+H, C <: CoordSystem](coords: C, colRange: (Int, Int), rowRange: (Int, Int), hexes: CommonSeq[CommonSeq[H]]) 
-    extends HexGrid[H, C] with RectangularGrid {
-  
+trait RectangularHexGrid[+H, C <: CoordSystem] extends HexGrid[H, C] with RectangularGrid {
+  def hexes: CommonSeq[CommonSeq[H]]
   override val size: Int = capacity
 
   require(hexes.length == numColumns, s"provided hexes wrong size: length=${hexes.length}, width=${numColumns}")
@@ -54,9 +54,9 @@ object RectangularHexGrid {
 
 @JSExportAll
 final case class ImmutableRectangularHexGrid[+H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: List[List[H]])
-    extends RectangularHexGrid[H, C](coords, colRange, rowRange, hexes) 
+    extends RectangularHexGrid[H, C]
     with ImmutableHexGrid[H, C, ImmutableRectangularHexGrid] 
-    with RectangularGrid(colRange, rowRange) {
+    with RectangularGrid {
 
   def set[T >: H](pos: Coord, h: T): ImmutableRectangularHexGrid[T, C] = {
     if (inBounds(pos)) ImmutableRectangularHexGrid(coords, colRange, rowRange, hexes.updated(pos.column-colRange._1, hexes(pos.column-colRange._1).updated(pos.row-rowRange._1, h)))  
@@ -70,9 +70,9 @@ final case class ImmutableRectangularHexGrid[+H, C <: CoordSystem](val coords: C
 
 @JSExportAll
 final case class MutableRectangularHexGrid[H, C <: CoordSystem](val coords: C, val colRange: (Int, Int), val rowRange: (Int, Int), val hexes: ArraySeq[ArraySeq[H]])
-    extends RectangularHexGrid[H, C](coords, colRange, rowRange, hexes) 
+    extends RectangularHexGrid[H, C]
     with MutableHexGrid[H, C]
-    with RectangularGrid(colRange, rowRange) {
+    with RectangularGrid {
   
   def set(pos: Coord, h: H): Unit = if (inBounds(pos)) hexes(pos.column-colRange._1).update(pos.row-rowRange._1, h)
 }

@@ -1,6 +1,7 @@
 package com.jarrahtechnology
 
 import scala.scalajs.js.annotation._
+import com.jarrahtechnology.util.Vector2
 
 package object hex {
 
@@ -10,6 +11,9 @@ package object hex {
   val hexSides = 6
   val sideAngle = 60
   val circleAngle = hexSides*sideAngle
+
+  val flatTopHexPixelPoints = List(Vector2(0, root3/4d), Vector2(0.25, root3/2d), Vector2(0.75, root3/2d), Vector2(1, root3/4d), Vector2(0.75, 0), Vector2(0.25, 0))
+  val pointyTopHexPixelPoints = List(Vector2(0, 0.25), Vector2(0, 0.75), Vector2(root3/4d, 1), Vector2(root3/2d, 0.75), Vector2(root3/2d, 0.25), Vector2(root3/4d, 0))
 
   @JSExportAll
   enum Direction {
