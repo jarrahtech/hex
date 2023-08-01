@@ -14,12 +14,12 @@ lazy val root = project.in(file(".")).
 lazy val hex = crossProject(JSPlatform, JVMPlatform).in(file(".")).
   settings(
     name := "hex",
-    version := "0.3.2",
+    version := "0.3.3",
 
     resolvers ++= Resolver.sonatypeOssRepos("public"),
     resolvers += Resolver.githubPackages("jarrahtech"),
 
-    libraryDependencies += "com.jarrahtechnology" %%% "jarrah-util" % "0.6.0",
+    libraryDependencies += "com.jarrahtechnology" %%% "jarrah-util" % "0.7.0",
 
     libraryDependencies += "org.scalatest" %%% "scalatest" % "3.2.15" % "test",
     libraryDependencies += "org.scalatest" %%% "scalatest-funsuite" % "3.2.15" % "test",

@@ -27,4 +27,10 @@ final case class MutableSparseHexGrid[H, C <: CoordSystem](val coords: C, val he
     with MutableHexGrid[H, C] {
   
   def set(pos: Coord, h: H): Unit = hexes.update(pos, h)
+  def clear(pos: Coord): Option[H] = hexes.remove(pos)
+}
+
+object MutableSparseHexGrid {
+  def empty[H, C <: CoordSystem](coords: C): MutableSparseHexGrid[H, C] = 
+    MutableSparseHexGrid(coords, collection.mutable.Map.empty[Coord, H])
 }
