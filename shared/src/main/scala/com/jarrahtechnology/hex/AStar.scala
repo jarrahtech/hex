@@ -13,7 +13,9 @@ final case class AStarMap(origin: Coord, paths: Map[Coord, Coord]) {
   }
 }
 
+// TODO: incremental A* that takes an existing A* map and extends it if necessary
 object AStar {
+  def emptyPath(origin: Coord) = AStarMap(origin, Map.empty[Coord, Coord])
   private val frontierOrdering = Ordering.by[CoordCost, Int](-_._1)
 
   @SuppressWarnings(Array("org.wartremover.warts.Any"))
@@ -23,8 +25,7 @@ object AStar {
   def untilAllChecked(paths: collection.Map[Coord, Coord]) = true
   def untilReach(dest: Coord)(paths: collection.Map[Coord, Coord]) = !paths.contains(dest)
 
-  def buildFrom(grid: HexGrid[?, ?], origin: Coord): AStarMap = buildFrom(origin, neighborsCost1(grid), untilAllChecked)
-
+  // It is the responsibility of the caller to ensure that the neighbors/continue combination terminates!
   def buildFrom(origin: Coord, neighbors: CoordCost => Seq[CoordCost], continue: collection.Map[Coord, Coord] => Boolean): AStarMap = {
     val costSoFar = collection.mutable.HashMap(origin -> 0)
     val paths = collection.mutable.HashMap.empty[Coord, Coord]
@@ -42,6 +43,9 @@ object AStar {
     AStarMap(origin, paths.toMap)
   }
 
-  def path(grid: HexGrid[?, ?], origin: Coord, dest: Coord) = buildFrom(origin, neighborsCost1(grid), untilReach(dest)).pathTo(dest)
-  def sparsePath(grid: HexGrid[?, ?], origin: Coord, dest: Coord) = buildFrom(origin, sparseNeighborsCost1(grid), untilReach(dest)).pathTo(dest)
+  def buildFrom(grid: HexGrid[?, ?], origin: Coord): AStarMap = buildFrom(origin, neighborsCost1(grid), untilAllChecked)
+  private def originNotDest(origin: Coord, dest: Coord, neighbors: CoordCost => Seq[CoordCost], continue: collection.Map[Coord, Coord] => Boolean) = 
+    if (origin==dest) emptyPath(origin) else buildFrom(origin, neighbors, continue) 
+  def path(grid: HexGrid[?, ?], origin: Coord, dest: Coord) = originNotDest(origin, dest, neighborsCost1(grid), untilReach(dest)).pathTo(dest)
+  def sparsePath(grid: HexGrid[?, ?], origin: Coord, dest: Coord) = originNotDest(origin, dest, sparseNeighborsCost1(grid), untilReach(dest)).pathTo(dest)
 }
